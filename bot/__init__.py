@@ -16,4 +16,5 @@ def start_bot():
     file.close()
     
     register_handlers()
+    
     executor.start_polling(dp, skip_updates=True)

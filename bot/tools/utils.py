@@ -1,8 +1,7 @@
 from requests_html import AsyncHTMLSession
-from bot import bot
-from bot.tools.keyboards import menus
-import json
 import asyncio
+import requests
+from config import TOKEN
 
 def register_user(telegram_id:str):
     db_data = open('db.txt', 'r').read()
@@ -29,16 +28,6 @@ async def get_info_about_next_boss(update=True) -> dict:
             }
         return data
     return None
-
-
-async def send_auto_info():
-    while True:
-        await asyncio.sleep(5)
-        db_data = open('db.txt', 'r').read()
-        for tg_id in db_data.split(','):
-            data = await get_info_about_next_boss()
-            await bot.send_photo(chat_id=tg_id, photo=data['place'], caption=f"Следующий босс: {data['boss']}\nБудет через {data['time']}", reply_markup=menus.update())
-    
     
 def calculate_time(time:str):
     time_arr = time.split(':')
