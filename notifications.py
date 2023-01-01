@@ -1,31 +1,14 @@
 import requests
 from config import TOKEN
-from bot.tools.utils import calculate_time
 from bot.tools import database
 import time
-from requests_html import HTMLSession
+import json
+import re
+from bot.tools.utils import get_next_boss
 
-wait = 60
+wait = 10
 
-loop_end = 3600
-
-def get_info_about_next_boss(update=True) -> dict:
-    session = HTMLSession()
-    res = session.get('https://bdocodex.com/ru/bosstimer/')
-    res.html.render(timeout=20)
-    time = res.html.find('#timer', first=True).text
-    name = res.html.find('.inlinediv', first=True).find('div', first=True).text
-    
-    if int(time.split(':')[0]) < 1 or update:
-        time = calculate_time(time)
-        with open(f'bot/media/{name.lower()}.png', 'rb') as file:
-            data = {
-                'boss': name,
-                'time': time,
-                'place': file.read()
-            }
-        return data
-    return None
+loop_end = 600
 
 
 def send_auto_info():
@@ -38,17 +21,42 @@ def send_auto_info():
             time_passed = 0
             users = database.get_users()
             for user_tg in users:
-                game_data = get_info_about_next_boss(update=True)
-                if game_data:
-                    if game_data['boss'].lower() != last_boss:
-                        last_boss = game_data['boss'].lower()
-                        send_message(user_tg, game_data)
+                game_data = get_next_boss()
+                print(check_time(game_data['time'], 50))
+                if game_data['boss'].lower() != last_boss and check_time(game_data['time'], 50):
+                    last_boss = game_data['boss'].lower()
+                    send_message(user_tg, game_data)
+                    
+def check_time(current_time, min_time):
+    res = re.search('(\d+) минут', current_time)
+    if int(res.group(1)) <= min_time:
+        return True
+    return False
             
             
 def send_message(tg_id, game_data):
-    data = {"chat_id": tg_id, "caption": f"Следующий босс: {game_data['boss']}\nБудет через {game_data['time']}"}
-    url = f"https://api.telegram.org/bot{TOKEN}/sendPhoto"
-    r = requests.post(url, data=data, files={"photo": game_data['place']})
+    text = f"Следующий босс: {game_data['boss']}\nБудет через {game_data['time']}"
+    if len(game_data['file_paths']) > 1:
+        bosses_arr = game_data['boss'].split('/')
+        data = {
+            "chat_id": tg_id,
+            "media": json.dumps([
+                {"type": "photo", "media": f"attach://{bosses_arr[0].lower()}.png", "caption":text},
+                {"type": "photo", "media": f"attach://{bosses_arr[1].lower()}.png"}
+            ])
+        }
+
+        files = {
+            f"{bosses_arr[0].lower()}.png" : open(game_data['file_paths'][0], 'rb'),
+            f"{bosses_arr[1].lower()}.png" : open(game_data['file_paths'][1], 'rb')
+        }
+
+        requests.post("https://api.telegram.org/bot" + TOKEN + "/sendMediaGroup", data=data, files=files)
+    else:
+        data = {"chat_id": tg_id, "caption": text}
+        url = f"https://api.telegram.org/bot{TOKEN}/sendPhoto"
+        file = open(game_data['file_paths'][0], 'rb')
+        requests.post(url, data=data, files={"photo": file})
     
 
 def main():
