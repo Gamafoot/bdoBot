@@ -11,10 +11,7 @@ def register_handlers():
     info.register_handlers(dp)
 
 
-def start_bot():
-    file = open('db.txt', 'w');
-    file.close()
-    
+def start_bot():    
     register_handlers()
     
     executor.start_polling(dp, skip_updates=True)

@@ -2,13 +2,6 @@ from requests_html import AsyncHTMLSession
 import asyncio
 import requests
 from config import TOKEN
-
-def register_user(telegram_id:str):
-    db_data = open('db.txt', 'r').read()
-    if telegram_id not in db_data.split(','):
-        db_data += str(telegram_id)+','
-        with open('db.txt', 'w') as file:
-            file.write(db_data)
             
 
 async def get_info_about_next_boss(update=True) -> dict:
@@ -46,3 +39,18 @@ def calculate_time(time:str):
         else:
             res_time += f'{int(hours)} час {int(minuts)} минут'
     return res_time
+
+class UserRequest:
+    def __init__(self):
+        self.users_was_request = []
+        
+    def add(self, telegram_id:str):
+        self.users_was_request.append(telegram_id)
+        
+    def remove(self, telegram_id:str):
+        self.users_was_request.remove(telegram_id)
+    
+    def check(self, telegram_id:str):
+        return telegram_id in self.users_was_request
+    
+userReq = UserRequest()
