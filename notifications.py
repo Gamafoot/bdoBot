@@ -22,15 +22,16 @@ def send_auto_info():
             users = database.get_users()
             for user_tg in users:
                 game_data = get_next_boss()
-                print(check_time(game_data['time'], 50))
                 if game_data['boss'].lower() != last_boss and check_time(game_data['time'], 50):
                     last_boss = game_data['boss'].lower()
                     send_message(user_tg, game_data)
                     
 def check_time(current_time, min_time):
-    res = re.search('(\d+) минут', current_time)
-    if int(res.group(1)) <= min_time:
-        return True
+    hour = re.search('(\d+) час', current_time)
+    if not hour.group(1):
+        res = re.search('(\d+) минут', current_time)
+        if int(res.group(1)) <= min_time:
+            return True
     return False
             
             
