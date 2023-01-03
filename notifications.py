@@ -6,10 +6,9 @@ import json
 import re
 from bot.tools.utils import get_next_boss
 
-wait = 10
+wait = 60
 
 loop_end = 600
-
 
 def send_auto_info():
     time_passed = 0
@@ -28,7 +27,7 @@ def send_auto_info():
                     
 def check_time(current_time, min_time):
     hour = re.search('(\d+) час', current_time)
-    if not hour.group(1):
+    if not hour:
         res = re.search('(\d+) минут', current_time)
         if int(res.group(1)) <= min_time:
             return True
