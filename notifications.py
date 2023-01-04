@@ -19,7 +19,7 @@ def send_auto_info():
         if time_passed >= loop_end:
             time_passed = 0
             game_data = get_next_boss()
-            if game_data['boss'].lower() != last_boss and check_time(game_data['time'], 50):
+            if game_data['boss'].lower() != last_boss and check_time(game_data['time'], 59):
                 last_boss = game_data['boss'].lower()
                 users = database.get_users()
                 for user_tg in users:
