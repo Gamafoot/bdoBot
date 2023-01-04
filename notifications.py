@@ -18,12 +18,13 @@ def send_auto_info():
         time_passed += wait
         if time_passed >= loop_end:
             time_passed = 0
-            users = database.get_users()
-            for user_tg in users:
-                game_data = get_next_boss()
-                if game_data['boss'].lower() != last_boss and check_time(game_data['time'], 50):
-                    last_boss = game_data['boss'].lower()
+            game_data = get_next_boss()
+            if game_data['boss'].lower() != last_boss and check_time(game_data['time'], 50):
+                last_boss = game_data['boss'].lower()
+                users = database.get_users()
+                for user_tg in users:
                     send_message(user_tg, game_data)
+                
                     
 def check_time(current_time, min_time):
     hour = re.search('(\d+) час', current_time)
@@ -35,6 +36,7 @@ def check_time(current_time, min_time):
             
             
 def send_message(tg_id, game_data):
+    
     text = f"Следующий босс: {game_data['boss']}\nБудет через {game_data['time']}"
     if len(game_data['file_paths']) > 1:
         bosses_arr = game_data['boss'].split('/')
